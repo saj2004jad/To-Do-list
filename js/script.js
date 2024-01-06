@@ -3,6 +3,11 @@ const themeSwitcherBtn = document.getElementById("theme-switcher");
 const bodyTag = document.querySelector("body");
 const addBtn = document.getElementById("add-btn");
 const todoInput = document.getElementById("addt");
+const ul = document.querySelector(".todos");
+
+
+
+
 function main() {
     //them_switcher
     themeSwitcherBtn.addEventListener("click", () => {
@@ -17,7 +22,24 @@ function main() {
     });
 
 
-makeTodoElelment(JSON.parse( localStorage.getItem("todos")));
+    makeTodoElelment(JSON.parse(localStorage.getItem("todos")));
+    ul.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        if (e.target.classList.contains("card") &&
+            !e.target.classList.contains("dragging")) {
+            const draggingCard = document.querySelector(".dragging");
+            const cards = ul.querySelectorAll(".card");
+
+        }
+
+    });
+
+
+
+
+
+
+
 
     //Add Todo In LocalStorage
     addBtn.addEventListener("click", () => {
@@ -64,12 +86,19 @@ function makeTodoElelment(todoArray) {
         clearBtn.classList.add("clear");
 
         //Add Attributes
-        card.setAttribute("draggable",true);
-        cbInput.setAttribute("type","checkbox");
-        img.setAttribute("src","assets/images/icon-cross.svg");
-        img.setAttribute("alt","Clear it");
-        item.textContent= todoObject.item;
+        card.setAttribute("draggable", true);
+        cbInput.setAttribute("type", "checkbox");
+        img.setAttribute("src", "assets/images/icon-cross.svg");
+        img.setAttribute("alt", "Clear it");
+        item.textContent = todoObject.item;
         //َAdd Eventlistener
+        card.addEventListener("dragstart", () => {
+            card.classList.add("dragging");
+
+        });
+        card.addEventListener("dragend", () => {
+            card.classList.remove("dragging");
+        });
 
 
         //Set Element by Parent child
@@ -84,7 +113,7 @@ function makeTodoElelment(todoArray) {
         document.querySelector(".todos").appendChild(card);
 
 
-        
+
 
 
     });
