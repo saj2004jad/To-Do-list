@@ -1,4 +1,4 @@
-### project name
+## project name
 ##### *The name of this project is To-Do-List* 
 
 ### This project is written in JavaScript
