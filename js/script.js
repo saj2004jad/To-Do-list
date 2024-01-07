@@ -4,8 +4,8 @@ const bodyTag = document.querySelector("body");
 const addBtn = document.getElementById("add-btn");
 const todoInput = document.getElementById("addt");
 const ul = document.querySelector(".todos");
-
-
+const filter = document.querySelector(".filter");
+const btnFilter = document.querySelector("#clear-completed");
 
 
 function main() {
@@ -28,9 +28,21 @@ function main() {
         if (e.target.classList.contains("card") &&
             !e.target.classList.contains("dragging")) {
             const draggingCard = document.querySelector(".dragging");
-            const cards = ul.querySelectorAll(".card");
+            const cards = [...ul.querySelectorAll(".card")];
+            const currentPos = cards.indexOf(draggingCard);
+            const newPos = cards.indexOf(e.target);
+            if (currentPos > newPos) {
+                ul.insertBefore(draggingCard, e.target);
 
+            } else {
+                ul.insertBefore(draggingCard, e.target.nextSibling);
+            }
+            const todos = JSON.parse(localStorage.getItem("todos"));
+            const remove = todos.splice(currentPos, 1);
+            todos.splice(newPos, 0, removed[0]);
+            localStorage.setItem("todos", JSON.stringify(todos));
         }
+
 
     });
 
@@ -52,20 +64,83 @@ function main() {
                 : JSON.parse(localStorage.getItem("todos",));
             const currentTodo = {
                 item: item,
-                iscompleted: false
+                isCompleted: false
             }
 
             todos.push(currentTodo);
             localStorage.setItem("todos", JSON.stringify(todos));
+            makeTodoElelment([currentTodo]);
         }
     });
+
+
+
+
+    todoInput.addEventListener('keydown', (e) => {
+        if (e.key == 'Enter') {
+            addBtn.click();
+
+        }
+    });
+
+    filter.addEventListener('click', (e) => {
+        const id = e.target.id;
+        if (id) {
+            document.querySelector(".on").classList.remove("on");
+            document.getElementById(id).classList.add("on");
+            document.querySelector(".todos").className = `todos ${id}`;
+
+        }
+    })
+
+    btnFilter.addEventListener('click', (e) => {
+        var deleteIndexes = [];
+        document.querySelectorAll(".card.checked").forEach((card) => {
+            deleteIndexes.push([...document.querySelectorAll(".todos .card")].indexOf(card)
+            );
+            card.classList.add("fall");
+            card.addEventListener("animationend", () => {
+                card.remove();
+            });
+
+        });
+        removeMultipleTodos(deleteIndexes);
+    })
+
+
 }
+
+function removeTodo(index) {
+    const todos = JSON.parse(localStorage.getItem("todos"));
+    todos.splice(index, 1);
+    localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+
+
+function removeMultipleTodos(indexes) {
+    var todos = JSON.parse(localStorage.getItem("todos"));
+    todos = todos.filter((todo, index) => {
+        return !indexes.includes(index);
+
+    })
+    localStorage.setItem("todos",JSON.stringify(todos));
+}
+
+function stateTodo(index, isComplete) {
+    const todos = JSON.parse(localStorage.getItem("todos"));
+    todos[index].isCompleted = isComplete;
+    localStorage.setItem("todos", JSON.stringify(todos));
+
+}
+
 
 
 function makeTodoElelment(todoArray) {
     if (!todoArray) {
         return null;
     }
+    const ItemsLeft = document.querySelector("#items-left");
     todoArray.forEach((todoObject) => {
         //create Html Elements of Todo
         const card = document.createElement("li");
@@ -91,6 +166,10 @@ function makeTodoElelment(todoArray) {
         img.setAttribute("src", "assets/images/icon-cross.svg");
         img.setAttribute("alt", "Clear it");
         item.textContent = todoObject.item;
+        if (todoObject.isCompleted) {
+            card.classList.add("checked");
+            cbInput.setAttribute("checked", "checked");
+        }
         //َAdd Eventlistener
         card.addEventListener("dragstart", () => {
             card.classList.add("dragging");
@@ -98,6 +177,34 @@ function makeTodoElelment(todoArray) {
         });
         card.addEventListener("dragend", () => {
             card.classList.remove("dragging");
+        });
+        cbInput.addEventListener('click', (e) => {
+            const currentCard = cbInput.parentElement.parentElement;
+            const checked = cbInput.checked;
+            const currentCardIndex =
+                [...document.querySelectorAll(".todos .card")]
+                    .indexOf(currentCard);
+            stateTodo(currentCardIndex, checked);
+            checked ? currentCard.classList.add('checked') : currentCard.classList.remove('checked')
+            ItemsLeft.textContent = document.querySelectorAll(
+                ".todos .card:not(.checked)").length;
+
+
+        })
+
+        clearBtn.addEventListener("click", (e) => {
+            const currentCard = clearBtn.parentElement;
+            currentCard.classList.add('fall');
+            const indexOfCurrentCard = [...document.querySelectorAll(".todos .card")].indexOf(currentCard);
+            removeTodo(indexOfCurrentCard);
+            currentCard.addEventListener('animationend', () => {
+
+                setTimeout(() => {
+                    currentCard.remove();
+                    ItemsLeft.textContent = document.querySelectorAll(
+                        ".todos .card:not(.checked)").length;
+                }, 100);
+            })
         });
 
 
@@ -117,5 +224,7 @@ function makeTodoElelment(todoArray) {
 
 
     });
+    ItemsLeft.textContent = document.querySelectorAll(
+        ".todos .card:not(.checked)").length;
 }
 document.addEventListener('DOMContentLoaded', main);
